@@ -12,7 +12,7 @@ from agentlib.modules import get_all_module_types
 
 T = TypeVar("T", bound=BaseModuleConfig)
 
-all_module_types = get_all_module_types(["agentlib_mpc", "agentlib_flexquant"])
+all_module_types = get_all_module_types(["agentlib_mpc", "agentlib_flexquant", "flexmarket"])
 # remove ML models, since import takes ages
 all_module_types.pop("agentlib_mpc.ann_trainer")
 all_module_types.pop("agentlib_mpc.gpr_trainer")
@@ -36,7 +36,7 @@ SHADOWMPC_CONFIG_TYPE: str = "agentlib_flexquant.shadow_mpc"
 BASELINEMINLPMPC_CONFIG_TYPE: str = "agentlib_flexquant.baseline_minlp_mpc"
 SHADOWMINLPMPC_CONFIG_TYPE: str = "agentlib_flexquant.shadow_minlp_mpc"
 INDICATOR_CONFIG_TYPE: str = "agentlib_flexquant.flexibility_indicator"
-MARKET_CONFIG_TYPE: str = "agentlib_flexquant.flexibility_market"
+MARKET_CONFIG_TYPE: str = "flexmarket.market_agent"
 SIMULATOR_CONFIG_TYPE: str = "simulator"
 
 
