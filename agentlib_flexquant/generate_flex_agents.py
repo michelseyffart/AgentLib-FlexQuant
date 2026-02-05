@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Union
 from pydantic import FilePath
 from agentlib.core.agent import AgentConfig
-from agentlib.core.datamodels import AgentVariable
+from agentlib.core.datamodels import AgentVariable, Source
 from agentlib.core.errors import ConfigurationError
 from agentlib.core.module import BaseModuleConfig
 from agentlib.utils import custom_injection, load_config
@@ -546,7 +546,11 @@ class FlexAgentGenerator:
             ].alias = mpc_dataclass.stored_energy_alias
 
         # add extra inputs needed for activation of flex or custom cost functions
-        module_config_flex.inputs.extend(mpc_dataclass.config_inputs_appendix)
+        # set the market agent as source
+        # module_config_flex.inputs.extend(mpc_dataclass.config_inputs_appendix)
+        for input_var in mpc_dataclass.config_inputs_appendix:
+            input_var.source = Source(agent_id=self.market_agent_config.id, module_id=None)
+            module_config_flex.inputs.append(input_var)
 
         # add extra parameters needed for activation of flex or custom weights
         for var in mpc_dataclass.config_parameters_appendix:
@@ -575,6 +579,7 @@ class FlexAgentGenerator:
                 unit="ct/kWh",
                 type="pd.Series",
                 description="electricity price",
+                source=Source(agent_id="PREDICTOR_AGENT_ID_PLACEHOLDER", module_id=None)
             )
         )
         # allow the module config to be changed
@@ -603,6 +608,22 @@ class FlexAgentGenerator:
         module_config.results_file = (
             self.flex_config.results_directory / module_config.results_file.name
         )
+
+        # add sources
+        input_source_dict = {
+            glbs.POWER_ALIAS_BASE: self.flex_config.baseline_config_generator_data.agent_id,
+            glbs.STORED_ENERGY_ALIAS_BASE: self.flex_config.baseline_config_generator_data.agent_id,
+            glbs.POWER_ALIAS_POS: self.flex_config.shadow_mpc_config_generator_data.pos_flex.agent_id,
+            glbs.STORED_ENERGY_ALIAS_POS: self.flex_config.shadow_mpc_config_generator_data.pos_flex.agent_id,
+            glbs.POWER_ALIAS_NEG: self.flex_config.shadow_mpc_config_generator_data.neg_flex.agent_id,
+            glbs.STORED_ENERGY_ALIAS_NEG: self.flex_config.shadow_mpc_config_generator_data.neg_flex.agent_id,
+            glbs.PROVISION_VAR_NAME: self.market_agent_config.id if self.flex_config.market_config else None,
+        }
+
+        for input_var in module_config.inputs:
+            if input_var.name in input_source_dict.keys():
+                input_var.source = Source(agent_id=input_source_dict[input_var.name], module_id=None)
+
         module_config.model_config["frozen"] = True
         return module_config
 

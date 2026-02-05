@@ -141,6 +141,12 @@ class FlexibilityIndicatorModuleConfig(agentlib.BaseModuleConfig):
             type="pd.Series",
             description="Energy stored in the system w.r.t. 0K",
         ),
+        agentlib.AgentVariable(
+            name=glbs.PROVISION_VAR_NAME,
+            unit="-",
+            type="bool",
+            description="Variable indicating whether the agent is currently in provision",
+        )
     ]
 
     outputs: list[agentlib.AgentVariable] = [
@@ -370,12 +376,13 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
         inputs = self.config.inputs
         for var in inputs:
             self.agent.data_broker.register_callback(
-                name=var.name, alias=var.name, callback=self.callback
+                name=var.name, alias=var.name, source=var.source, callback=self.callback
             )
-        self.agent.data_broker.register_callback(
-            name=glbs.PROVISION_VAR_NAME, alias=glbs.PROVISION_VAR_NAME,
-            callback=self.callback
-        )
+        # Provision variable is now part of the inputs
+        # self.agent.data_broker.register_callback(
+        #     name=glbs.PROVISION_VAR_NAME, alias=glbs.PROVISION_VAR_NAME,
+        #     callback=self.callback
+        # )
 
     def process(self):
         """Yield control to the simulation environment and wait for events."""

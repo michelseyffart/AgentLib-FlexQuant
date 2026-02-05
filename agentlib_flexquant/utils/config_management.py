@@ -119,7 +119,7 @@ def to_dict_and_remove_unnecessary_fields(module: BaseModuleConfig) -> dict:
     """Remove unnecessary fields from the module to keep the created json simple."""
     excluded_fields = [
         "rdf_class",
-        "source",
+        # "source",
         "type",
         "timestamp",
         "description",
