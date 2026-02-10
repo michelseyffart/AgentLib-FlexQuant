@@ -445,12 +445,17 @@ class FlexAgentGenerator:
             # In addition to creating the full control variables, the inputs
             # and states  of the Baseline are communicated to the Shadow MPC
             # to ensure synchronisation. Therefore, all inputs and states of
-            # the Baseline are added to the Shadow MPCs with an alias
+            # the Baseline are added to the Shadow MPCs with an alias.
+            # The BaselineAgent is set as the source to allow multiple DERs.
             baseline_names = {inp.name for inp in self.baseline_mpc_module_config.inputs}
             for i, input in enumerate(module_config_flex.inputs):
                 if input.name in baseline_names:
                     module_config_flex.inputs[i].alias = (
                             input.name + glbs.base_vars_to_communicate_suffix)
+                    module_config_flex.inputs[i].source = Source(
+                        agent_id=self.flex_config.baseline_config_generator_data.agent_id, module_id=None
+                    )
+
                     
             # add Baseline input names to shadow MPC config for inputs tracking
             module_config_flex.baseline_input_names = [
