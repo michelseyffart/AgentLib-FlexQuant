@@ -14,6 +14,28 @@ ENV_CONFIG = {"rt": False, "factor": 0.01, "t_sample": 60}
 def run_example(until=until, with_plots=False, with_dashboard=False):
     """ Example with market usage
 
+    mpc_config: 
+        Sets inputs, outputs, states, and parameters for the MPC agent. 
+        It points to the path of the MPC problem definition file (simple_building.py) and defines the MPC parameters.
+    sim_config: 
+        Sets inputs, outputs, and states for the simulation agent. 
+        It points to the path of the FMU file and defines the simulation parameters.
+    predictor_config:
+        Sets parameters for the predictor agent and points to the path of the predictor formulation file (predictor.py).
+    flex_config:
+        Sets various options for the flexibility quantification framework: 
+        - characteristic times for the indicator module (e.g. market time, preparation time, flex event duration)
+        - options for the cost calculation
+            - whether to use a constant electricity price or to input a time series sent by the predictor agent
+            - whether to use a constant feed-in tariff or to input a time series sent by the predictor agent
+                - if no feed-in is required (e.g. for a house without electricity generation), use a constant feed-in tariff with value 0
+        - option to correct the cost for stored energy at the end of the prediction horizon 
+        - option to include a market config (points to a market config file) 
+        - options for the flexibility agent generator: 
+            - power variable of the baseline agent 
+            - cost functions of PF-MPC and NF-MPC agents, including custom parameters and variables for the shadow MPCs 
+        - general options such as results paths 
+
     Change flex_power_feedback_method in MarketSpecifications to deal with systems with
     fast or slow inertia.
     See difference in results: when using collocation, power during flex event does not

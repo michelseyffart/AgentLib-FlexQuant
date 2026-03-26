@@ -8,7 +8,7 @@ from pydantic import (field_validator, ConfigDict, model_validator, Field, BaseM
                       field_serializer)
 from agentlib.core.agent import AgentConfig
 from agentlib.core.errors import ConfigurationError
-from agentlib_mpc.data_structures.mpc_datamodels import MPCVariable
+from agentlib_mpc.data_structures.mpc_datamodels import AgentVariable, MPCVariable
 
 from agentlib_flexquant.data_structures.mpcs import (
     BaselineMPCData,
@@ -33,12 +33,12 @@ class ShadowMPCConfigGeneratorConfig(BaseModel):
     """Class defining the options to initialize the shadow mpc config generation."""
 
     model_config = ConfigDict(
-        json_encoders={MPCVariable: lambda v: v.dict()}, extra="forbid"
+        json_encoders={MPCVariable: lambda v: v.dict(), AgentVariable: lambda v: v.dict()}, extra="forbid"
     )
     weights: list[MPCVariable] = Field(
         default=[], description="Name and value of weights",
     )
-    custom_inputs: list[MPCVariable] = Field(
+    custom_inputs: list[AgentVariable] = Field(
         default=[], description="Additional Inputs for the Shadow-MPCs. E.g. the baseline power prediction P_el_base"
     )
 

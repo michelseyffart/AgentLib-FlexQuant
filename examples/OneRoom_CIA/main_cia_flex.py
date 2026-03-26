@@ -1,8 +1,5 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-import matplotlib
-
-matplotlib.use("Agg")
 from agentlib.utils.multi_agent_system import LocalMASAgency
 import numpy as np
 import agentlib_mpc.utils.plotting.basic as mpcplot
@@ -15,7 +12,7 @@ from agentlib_flexquant.utils.interactive import Dashboard
 logging.basicConfig(level=logging.WARN)
 until = 12000
 
-time_of_activation = 1500
+time_of_activation = 9000
 
 ENV_CONFIG = {"rt": False, "factor": 0.01, "t_sample": 10}
 
@@ -26,6 +23,28 @@ def run_example(until=until, with_plots=False, with_dashboard=False):
     custom optimization backend, that also enables rounding instead of CIA for solving
     these problems, which sometimes shows better performance. To toggle this option set
     use_rounding in the config.
+
+    mpc_config: 
+        Sets inputs, outputs, states, and parameters for the MPC agent. 
+        It points to the path of the MPC problem definition file (simple_building.py) and defines the MPC parameters.
+    sim_config: 
+        Sets inputs, outputs, and states for the simulation agent. 
+        It points to the path of the FMU file and defines the simulation parameters.
+    predictor_config:
+        Sets parameters for the predictor agent and points to the path of the predictor formulation file (predictor.py).
+    flex_config:
+        Sets various options for the flexibility quantification framework: 
+        - characteristic times for the indicator module (e.g. market time, preparation time, flex event duration)
+        - options for the cost calculation
+            - whether to use a constant electricity price or to input a time series sent by the predictor agent
+            - whether to use a constant feed-in tariff or to input a time series sent by the predictor agent
+                - if no feed-in is required (e.g. for a house without electricity generation), use a constant feed-in tariff with value 0
+        - option to correct the cost for stored energy at the end of the prediction horizon 
+        - option to include a market config (points to a market config file) 
+        - options for the flexibility agent generator: 
+            - power variable of the baseline agent 
+            - cost functions of PF-MPC and NF-MPC agents, including custom parameters and variables for the shadow MPCs 
+        - general options such as results paths 
     """
     results = []
     mpc_config = "mpc_and_sim/simple_cia_mpc.json"
@@ -52,7 +71,7 @@ def run_example(until=until, with_plots=False, with_dashboard=False):
         ax1 = axs[0]
         # load
         ax1.set_ylabel("$dot{Q}_{Room}$ in W")
-        results["SimAgent"]["room"]["load"].plot(ax=ax1)
+        results["SimAgent"]["room"]["load"].dropna().plot(ax=ax1, drawstyle="steps-post")
         x_ticks = np.arange(0, 3600 * 6 + 1, 3600)
         x_tick_labels = [int(tick / 3600) for tick in x_ticks]
         ax1.set_xticks(x_ticks)

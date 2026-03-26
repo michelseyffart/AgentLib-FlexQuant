@@ -1,7 +1,6 @@
 """
 Defines MPC and MINLP-MPC for baseline flexibility quantification.
 """
-from agentlib_mpc.modules import minlp_mpc, mpc_full
 import os
 import math
 import numpy as np
@@ -11,7 +10,7 @@ from pydantic import Field
 from collections.abc import Iterable
 import agentlib_flexquant.data_structures.globals as glbs
 from agentlib import AgentVariable
-from agentlib_mpc.modules import mpc_full, minlp_mpc
+from agentlib_mpc.modules.mpc import mpc_full, minlp_mpc
 from agentlib_mpc.data_structures.mpc_datamodels import Results, InitStatus
 from agentlib_flexquant.data_structures.globals import (full_trajectory_suffix,
                                                         base_vars_to_communicate_suffix)
@@ -101,7 +100,7 @@ class FlexibilityBaselineMPC(mpc_full.MPC):
         self.set_actuation(result)
         # Set variables, so that shadow MPCs are initialized with the
         # same values as the Baseline
-        self.set_vars_for_shadow()
+        self.set_vars_for_shadow(result)
         self.set_output(result)
         self._remove_old_values_from_history()
 
@@ -122,7 +121,7 @@ class FlexibilityBaselineMPC(mpc_full.MPC):
                      self.get(glbs.ACCEPTED_POWER_VAR_NAME).value.index[-1] -
                      self.env.time)
 
-    def set_vars_for_shadow(self):
+    def set_vars_for_shadow(self, solution):
         """Sets the variables of the Baseline MPC needed by the shadow MPCs
         with a predefined suffix.
         This essentially sends the same inputs and states the Baseline used
@@ -130,7 +129,11 @@ class FlexibilityBaselineMPC(mpc_full.MPC):
         """
         for vars_to_com in self.config.vars_to_communicate:
             vars_name = self._vars_to_com_name_mapping[vars_to_com.name]
-            self.set(vars_to_com.name, self.get_value(vars_name))
+            if vars_name in solution.df.variable:
+                vars_value = solution.df.variable[vars_name]
+            else:  # parameter
+                vars_value = solution.df.parameter[vars_name]
+            self.set(vars_to_com.name, vars_value)
 
     def set_actuation(self, solution: Results):
         super().set_actuation(solution)
@@ -429,7 +432,7 @@ class FlexibilityBaselineMINLPMPC(minlp_mpc.MINLPMPC):
         self.set_actuation(result)
         # Set variables, so that shadow MPCs are initialized
         # with the same values as the Baseline
-        self.set_vars_for_shadow()
+        self.set_vars_for_shadow(result)
         self.set_output(result)
 
     def pre_computation_hook(self):
@@ -451,7 +454,7 @@ class FlexibilityBaselineMINLPMPC(minlp_mpc.MINLPMPC):
                      self.get(glbs.ACCEPTED_POWER_VAR_NAME).value.index[-1] -
                      self.env.time + timestep,)
 
-    def set_vars_for_shadow(self):
+    def set_vars_for_shadow(self, solution):
         """Sets the variables of the Baseline MPC needed by the shadow MPCs
         with a predefined suffix.
         This essentially sends the same inputs and states the Baseline used
@@ -459,7 +462,11 @@ class FlexibilityBaselineMINLPMPC(minlp_mpc.MINLPMPC):
         """
         for vars_to_com in self.config.vars_to_communicate:
             vars_name = self._vars_to_com_name_mapping[vars_to_com.name]
-            self.set(vars_to_com.name, self.get_value(vars_name))
+            if vars_name in solution.df.variable:
+                vars_value = solution.df.variable[vars_name]
+            else:  # parameter
+                vars_value = solution.df.parameter[vars_name]
+            self.set(vars_to_com.name, vars_value)
 
     def set_actuation(self, solution: Results):
         super().set_actuation(solution)

@@ -42,7 +42,9 @@
                                       "absolute_power_deviation_tolerance": 0.05},
                     "calculate_costs": {"calculate_flex_costs": true,
                                         "use_constant_electricity_price": true,
-                                        "const_electricity_price": 10}
+                                        "use_constant_feed_in_price": true,
+                                        "const_electricity_price": 10,
+                                        "const_feed_in_price": 0}
                 }
             ]
         },

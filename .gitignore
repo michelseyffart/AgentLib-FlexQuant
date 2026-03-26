@@ -5,5 +5,5 @@ created_flex_files/
 flex_output_data/
 generated_files/
 .vscode/
-flexquant.egg-info/
+agentlib_flexquant.egg-info/
 *.csv
