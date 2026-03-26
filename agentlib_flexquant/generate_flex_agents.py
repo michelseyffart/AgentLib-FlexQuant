@@ -568,6 +568,8 @@ class FlexAgentGenerator:
         existing_input_names = {inp.name: idx for idx, inp in
                                 enumerate(module_config_flex.inputs)}
         for appendix_inp in mpc_dataclass.config_inputs_appendix.copy():
+            # Set the source of the input to the market agent
+            appendix_inp.source = Source(agent_id=self.market_agent_config.id, module_id=None)
             # If variable already exists in the config
             if appendix_inp.name in existing_input_names:
                 self.logger.warning(f"The given variable {appendix_inp.name} in the "
@@ -587,11 +589,6 @@ class FlexAgentGenerator:
             else:
                 # Add the new input
                 module_config_flex.inputs.append(appendix_inp)
-        # set the market agent as source
-        # module_config_flex.inputs.extend(mpc_dataclass.config_inputs_appendix)
-        for input_var in mpc_dataclass.config_inputs_appendix:
-            input_var.source = Source(agent_id=self.market_agent_config.id, module_id=None)
-            module_config_flex.inputs.append(input_var)
 
         # add extra parameters needed for activation of flex or custom weights
         for var in mpc_dataclass.config_parameters_appendix:
