@@ -96,8 +96,14 @@ class BaseMPCData(pydantic.BaseModel):
     # variables
     power_alias: str
     stored_energy_alias: str
-    config_inputs_appendix: list[MPCVariable] = Field(default=[], description="Inputs, which are appended to the MPCs' config (.json file and ConfigClass).")
-    config_parameters_appendix: list[MPCVariable] = Field(default=[], description="Parameters, which are appended to the MPCs' config (.json file and ConfigClass).")
+    config_inputs_appendix: list[MPCVariable] = Field(
+        default=[],
+        description="Inputs, which are appended to the MPCs' config "
+                    "(.json file and ConfigClass).")
+    config_parameters_appendix: list[MPCVariable] = Field(
+        default=[],
+        description="Parameters, which are appended to the MPCs' config "
+                    "(.json file and ConfigClass).")
     
     @field_serializer('config_inputs_appendix', 'config_parameters_appendix')
     def serialize_mpc_variables(self, variables: list[MPCVariable], _info):

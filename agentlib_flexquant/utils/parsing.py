@@ -1,13 +1,11 @@
 import ast
+import logging
 from string import Template
 from typing import Optional, Union
 
 from agentlib_mpc.data_structures.mpc_datamodels import MPCVariable
 
 from agentlib_flexquant.data_structures.globals import (
-    FLEX_EVENT_DURATION,
-    MARKET_TIME,
-    PREP_TIME,
     SHADOW_MPC_COST_FUNCTION,
     full_trajectory_suffix,
     return_baseline_cost_function,
@@ -18,10 +16,11 @@ from agentlib_flexquant.data_structures.globals import (
 )
 from agentlib_flexquant.data_structures.mpcs import (
     BaselineMPCData,
-    BaseMPCData,
     NFMPCData,
     PFMPCData,
 )
+
+logger = logging.getLogger(__name__)
 
 # Constants
 CASADI_INPUT = "CasadiInput"
@@ -137,6 +136,27 @@ def add_output(
             description=description,
         )
     )
+
+
+def _get_assignment_name(node: ast.stmt) -> Optional[str]:
+    """Extract the variable name from an assignment statement.
+
+    Handles both annotated assignments (ast.AnnAssign) and regular assignments
+    (ast.Assign).
+
+    Args:
+        node: An AST statement node.
+
+    Returns:
+        The variable name if the node is an assignment, None otherwise.
+
+    """
+    if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+        return node.target.id
+    elif isinstance(node, ast.Assign) and len(node.targets) == 1:
+        if isinstance(node.targets[0], ast.Name):
+            return node.targets[0].id
+    return None
 
 
 class SetupSystemModifier(ast.NodeTransformer):
@@ -266,6 +286,19 @@ class SetupSystemModifier(ast.NodeTransformer):
             # If there are custom functions in the config class, skip them
             if isinstance(body, ast.FunctionDef):
                 continue
+
+            # Skip non-annotated assignments with a warning
+            if isinstance(body, ast.Assign):
+                var_name = _get_assignment_name(body)
+                logger.warning(
+                    "Skipping non-annotated class variable '%s' in config class '%s'. "
+                    "Only type-annotated variables (e.g., 'var: Type = value') can be "
+                    "modified by the AST transformer. If this variable should be "
+                    "included in the MPC configuration, please add a type annotation.",
+                    var_name or "<unknown>",
+                    node.name
+                )
+                continue
             # add the time and full baseline control trajectory as inputs
             if body.target.id == "inputs":
                 for control in self.controls:
@@ -315,6 +348,20 @@ class SetupSystemModifier(ast.NodeTransformer):
             # If there are custom functions in the config class, skip them
             if isinstance(body, ast.FunctionDef):
                 continue
+
+            # Skip regular assignments (ast.Assign) - only process annotated assignments
+            if not isinstance(body, ast.AnnAssign):
+                var_name = _get_assignment_name(body)
+                logger.warning(
+                    "Skipping non-annotated class variable '%s' in config class '%s'. "
+                    "Only type-annotated variables (e.g., 'var: Type = value') can be "
+                    "modified by the AST transformer. If this variable should be "
+                    "included in the MPC configuration, please add a type annotation.",
+                    var_name or "<unknown>",
+                    node.name
+                )
+                continue
+
             # add the fullcontrol trajectories to the baseline config class
             if body.target.id == "outputs":
                 if isinstance(body.value, ast.List):

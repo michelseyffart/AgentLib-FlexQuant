@@ -47,7 +47,7 @@ class Dashboard(flex_results.Results):
     """Class for the dashboard of flexquant"""
 
     # Constants for plotting variables
-    MPC_ITERATIONS: str = "iter_count"
+    MPC_ITERATIONS: str = "stats_iter_count"
 
     # Label for the positive and negative flexibilities
     label_positive: str = "positive"

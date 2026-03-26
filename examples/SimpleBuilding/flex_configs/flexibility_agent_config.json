@@ -40,6 +40,13 @@
                     ],
                     "correct_costs": {
                         "enable_energy_costs_correction": false
+                    },
+                    "calculate_costs": {
+                        "calculate_flex_costs": true,
+                        "use_constant_electricity_price": false,
+                        "const_electricity_price": 0.0,
+                        "use_constant_feed_in_price": true,
+                        "const_feed_in_price": 0.0
                     }
                 }
             ]

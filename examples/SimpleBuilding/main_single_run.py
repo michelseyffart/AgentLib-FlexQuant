@@ -11,8 +11,32 @@ mpc_config = "mpc_and_sim/simple_building.json"
 predictor_config = "predictor/predictor_config.json"
 flex_config = "flex_configs/flexibility_agent_config.json"
 
-
 def run_example(until=until):
+    """Runs MAS simulation with specified flex event duration.
+    
+    mpc_config: 
+        Sets inputs, outputs, states, and parameters for the MPC agent. 
+        It points to the path of the MPC problem definition file (simple_building.py) and defines the MPC parameters.
+    sim_config: 
+        Sets inputs, outputs, and states for the simulation agent. 
+        It points to the path of the FMU file and defines the simulation parameters.
+    predictor_config:
+        Sets parameters for the predictor agent and points to the path of the predictor formulation file (predictor.py).
+    flex_config:
+        Sets various options for the flexibility quantification framework: 
+        - characteristic times for the indicator module (e.g. market time, preparation time, flex event duration)
+        - options for the cost calculation
+            - whether to use a constant electricity price or to input a time series sent by the predictor agent
+            - whether to use a constant feed-in tariff or to input a time series sent by the predictor agent
+                - if no feed-in is required (e.g. for a house without electricity generation), use a constant feed-in tariff with value 0
+        - option to correct the cost for stored energy at the end of the prediction horizon 
+        - option to include a market config (points to a market config file) 
+        - options for the flexibility agent generator: 
+            - power variable of the baseline agent 
+            - cost functions of PF-MPC and NF-MPC agents, including custom parameters and variables for the shadow MPCs 
+        - general options such as results paths 
+
+    """
 
     generator = FlexAgentGenerator(
         flex_config=flex_config, mpc_agent_config=mpc_config

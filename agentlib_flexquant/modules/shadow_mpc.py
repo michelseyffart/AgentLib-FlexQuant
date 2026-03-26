@@ -9,7 +9,7 @@ from pydantic import Field
 from typing import Dict, Union, Optional
 from collections.abc import Iterable
 from agentlib.core.datamodels import AgentVariable, Source
-from agentlib_mpc.modules import mpc_full, minlp_mpc
+from agentlib_mpc.modules.mpc import mpc_full, minlp_mpc
 from agentlib_flexquant.utils.data_handling import fill_nans, MEAN
 from agentlib_flexquant.data_structures.globals import (full_trajectory_suffix,
                                                         base_vars_to_communicate_suffix)
@@ -202,15 +202,17 @@ class FlexibilityShadowMPC(mpc_full.MPC):
         if inp.name in self.config.full_control_names:
             if vals.isna().any():
                 vals = fill_nans(series=vals, method=MEAN)
-            # add time shift env.now to the mpc prediction index if it starts at t=0
-            if vals.index[0] == 0:
-                vals.index += self.env.time
+        # add time shift env.time to the incoming variable to adapt to mpc output,
+        # which starts at t=0
+        if vals.index[0] == 0:
+            self.logger.info(f"The incoming variable {inp.name} starts with a time "
+                             f"index of 0. Adding the current environment time.")
+            vals.index += self.env.time
 
         # update value in the tracking dictionary
         self._track_base_comm_vars_dict[name].value = vals
         # set value
         self.set(name, vals)
-        # self.model.set(name, (vals if not isinstance(vals, Iterable) else vals[0]))
 
         # make sure all necessary inputs are set
         if all(x.value is not None for x in self._track_base_comm_vars_dict.values()):
@@ -449,12 +451,12 @@ class FlexibilityShadowMINLPMPC(minlp_mpc.MINLPMPC):
         if inp.name in self.config.full_control_names:
             if vals.isna().any():
                 vals = fill_nans(series=vals, method=MEAN)
-            # add time shift env.now to the mpc prediction index if it starts at t=0
-            if vals.index[0] == 0:
-                vals.index += self.env.time
             # set full controls to custom cia backend to constrain during market time
             if isinstance(self.optimization_backend, ConstrainedCasADiCIABackend):
                 self.optimization_backend.config.full_controls_dict[inp.name] = vals
+        # add time shift env.now to the mpc prediction index if it starts at t=0
+        if vals.index[0] == 0:
+            vals.index += self.env.time
 
         # update value in the tracking dictionary
         self._track_base_comm_vars_dict[name].value = vals

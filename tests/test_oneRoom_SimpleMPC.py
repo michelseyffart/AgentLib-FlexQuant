@@ -47,8 +47,8 @@ def create_dataframe_summary(df: pd.DataFrame, precision: int = 6) -> dict:
     summary = {
         "shape": df.shape,
         "columns": df.columns.tolist(),
-        "index_start": str(df.index.min()),
-        "index_end": str(df.index.max()),
+        "index_start": str(tuple(float(x) for x in df.index.min())),
+        "index_end": str(tuple(float(x) for x in df.index.max())),
         "statistics": stats_dict_clean,
         "head_5_rows": df.head(5).round(precision).to_dict(orient='split'),
         "tail_5_rows": df.tail(5).round(precision).to_dict(orient='split'),

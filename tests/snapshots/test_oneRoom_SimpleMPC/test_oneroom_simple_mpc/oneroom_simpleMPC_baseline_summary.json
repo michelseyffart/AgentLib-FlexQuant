@@ -65,10 +65,6 @@
       "mDot"
     ],
     [
-      "parameter",
-      "r_del_u_mDot"
-    ],
-    [
       "variable",
       "T"
     ],
@@ -208,10 +204,6 @@
         "mDot"
       ],
       [
-        "parameter",
-        "r_del_u_mDot"
-      ],
-      [
         "variable",
         "T"
       ],
@@ -302,7 +294,6 @@
         1.0,
         298.16,
         0.02,
-        0.0,
         298.16,
         303.15,
         288.15,
@@ -331,7 +322,6 @@
         0.0,
         0.0,
         0.0,
-        NaN,
         NaN,
         NaN,
         NaN,
@@ -376,7 +366,6 @@
         NaN,
         NaN,
         NaN,
-        NaN,
         293.6665,
         303.15,
         288.15,
@@ -397,7 +386,6 @@
         -Infinity
       ],
       [
-        NaN,
         NaN,
         NaN,
         NaN,
@@ -442,7 +430,6 @@
         0.0,
         0.0,
         0.0,
-        NaN,
         NaN,
         NaN,
         NaN,
@@ -498,7 +485,7 @@
   "index_start": "(0.0, 0.0)",
   "shape": [
     580,
-    35
+    34
   ],
   "statistics": {
     "lower.E_out": {
@@ -679,16 +666,6 @@
       "max": 100.0,
       "mean": 100.0,
       "min": 100.0,
-      "std": 0.0
-    },
-    "parameter.r_del_u_mDot": {
-      "25%": 0.0,
-      "50%": 0.0,
-      "75%": 0.0,
-      "count": 4.0,
-      "max": 0.0,
-      "mean": 0.0,
-      "min": 0.0,
       "std": 0.0
     },
     "parameter.r_mDot": {
@@ -919,10 +896,6 @@
         "mDot"
       ],
       [
-        "parameter",
-        "r_del_u_mDot"
-      ],
-      [
         "variable",
         "T"
       ],
@@ -1013,7 +986,6 @@
         NaN,
         NaN,
         NaN,
-        NaN,
         293.2944,
         303.15,
         288.15,
@@ -1034,7 +1006,6 @@
         -Infinity
       ],
       [
-        NaN,
         NaN,
         NaN,
         NaN,
@@ -1087,7 +1058,6 @@
         NaN,
         NaN,
         NaN,
-        NaN,
         293.3706,
         303.15,
         288.15,
@@ -1124,7 +1094,6 @@
         NaN,
         NaN,
         NaN,
-        NaN,
         294.15,
         303.15,
         288.15,
@@ -1145,7 +1114,6 @@
         -Infinity
       ],
       [
-        NaN,
         NaN,
         NaN,
         NaN,

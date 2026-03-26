@@ -110,7 +110,8 @@ class ConstrainedCasADiCIABackend(CasADiCIABackend):
             if cons is not None:
                 last_idx = 0
                 for idx, value in cons.items():
-                    # constrain ever timestep before market_time with values of baseline
+                    # constrain every timestep before market_time
+                    # with values of baseline
                     binapprox.set_valid_controls_for_interval(
                         (last_idx, idx), [value, 1 - value]
                     )

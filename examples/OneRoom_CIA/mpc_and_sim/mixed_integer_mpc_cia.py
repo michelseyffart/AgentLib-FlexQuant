@@ -31,7 +31,7 @@ class MyCasadiModelConfig(CasadiModelConfig):
             name="cooling_power",
             value=400,
             unit="W",
-            description="Air mass flow " "into zone",
+            description="Air mass flow into zone",
         ),
         CasadiInput(
             name="cooler_on",
@@ -43,7 +43,7 @@ class MyCasadiModelConfig(CasadiModelConfig):
         ),
         # disturbances
         CasadiInput(
-            name="load", value=150, unit="W", description="Heat " "load into zone"
+            name="load", value=150, unit="W", description="Heat load into zone"
         ),
         CasadiInput(
             name="T_in", value=290.15, unit="K", description="Inflow air temperature"

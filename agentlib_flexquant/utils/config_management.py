@@ -17,7 +17,7 @@ all_module_types = get_all_module_types(["agentlib_mpc", "agentlib_flexquant"])
 all_module_types.pop("agentlib_mpc.ann_trainer")
 all_module_types.pop("agentlib_mpc.gpr_trainer")
 all_module_types.pop("agentlib_mpc.linreg_trainer")
-all_module_types.pop("agentlib_mpc.ann_simulator")
+all_module_types.pop("agentlib_mpc.ml_simulator")
 all_module_types.pop("agentlib_mpc.set_point_generator")
 # remove clone since not used
 all_module_types.pop("clonemap")
@@ -112,7 +112,13 @@ def get_flex_mpc_module_config(
     """Get a flexquant module config from an original agentlib module config."""
     config_dict = module_config.model_dump()
     config_dict["type"] = module_type
-    return MODULE_TYPE_DICT[module_type](**config_dict, _agent_id=agent_config.id)
+    flex_config_dict = MODULE_TYPE_DICT[module_type](**config_dict,
+                                                     _agent_id=agent_config.id)
+    # HOTFIX due to AgentLib-MPC bug. Needs to be adapted after Objectives
+    # in AgentLib-MPC are fixed.
+    if flex_config_dict.r_del_u is None:
+        flex_config_dict = flex_config_dict.model_copy(update={"r_del_u": {}})
+    return flex_config_dict
 
 
 def to_dict_and_remove_unnecessary_fields(module: BaseModuleConfig) -> dict:

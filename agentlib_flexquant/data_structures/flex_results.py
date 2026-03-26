@@ -9,11 +9,11 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Type, Union
 
 import pandas as pd
-from pydantic import BaseModel, FilePath
+from pydantic import FilePath
 from agentlib.core.agent import AgentConfig
 from agentlib.modules.simulation.simulator import SimulatorConfig
 from agentlib.utils import load_config
-from agentlib_mpc.modules.mpc import BaseMPCConfig
+from agentlib_mpc.modules.mpc.mpc import BaseMPCConfig
 from agentlib_mpc.utils import TimeConversionTypes
 from agentlib_mpc.utils.analysis import load_mpc, load_mpc_stats, load_sim
 
@@ -141,6 +141,20 @@ class Results:
         self._load_stats_dataframes(results_path)
         # Convert the time in the dataframes to the desired timescale
         self.convert_timescale_of_dataframe_index(to_timescale=to_timescale)
+
+        # Clear unpicklable model reference to enable multiprocessing
+        self._clear_unpicklable_references()
+
+    def _clear_unpicklable_references(self):
+        """Remove references to objects that cannot be pickled.
+
+        This enables the Results object to be used with multiprocessing.
+        The model field contains CDLL references that cannot be serialized.
+        """
+        if (hasattr(self, 'simulator_module_config') and
+                self.simulator_module_config is not None):
+            if hasattr(self.simulator_module_config, 'model'):
+                object.__setattr__(self.simulator_module_config, 'model', None)
 
     def _load_flex_config(
         self,
