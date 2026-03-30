@@ -705,7 +705,8 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
             timestamp: the time offer was generated
 
         """
-        if self.offer_count > 0:
+        if self.env.time >= self.get_value(glbs.PREP_TIME) + self.get_value(glbs.FLEX_EVENT_DURATION) - self.get_value(glbs.MARKET_TIME):
+        # if self.offer_count > 0:
             var = self._variables_dict[name]
             var.value = FlexOffer(
                 base_power_profile=base_power_profile,
