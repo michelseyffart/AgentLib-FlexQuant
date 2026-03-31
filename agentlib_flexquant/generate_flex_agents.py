@@ -481,7 +481,7 @@ class FlexAgentGenerator:
             module_config_flex.custom_input_names.extend([
                 {"name": input.name, "alias": input.alias}
                 for input in mpc_dataclass.config_inputs_appendix
-                if input.name not in [glbs.PROVISION_VAR_NAME]
+                if input.name not in [glbs.PROVISION_VAR_NAME, glbs.PAUSE_FLEX_CALC]
             ])
 
             for i, state in enumerate(module_config_flex.states):
@@ -665,6 +665,7 @@ class FlexAgentGenerator:
             glbs.POWER_ALIAS_NEG: self.flex_config.shadow_mpc_config_generator_data.neg_flex.agent_id,
             glbs.STORED_ENERGY_ALIAS_NEG: self.flex_config.shadow_mpc_config_generator_data.neg_flex.agent_id,
             glbs.PROVISION_VAR_NAME: self.market_agent_config.id if self.flex_config.market_config else None,
+            glbs.PAUSE_FLEX_CALC: self.market_agent_config.id if self.flex_config.market_config else None,
         }
 
         for input_var in module_config.inputs:

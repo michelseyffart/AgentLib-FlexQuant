@@ -56,6 +56,12 @@ default_inputs = [
             type="bool",
             description="Flag indicating whether flexibility should be provisioned",
         ),
+        MPCVariable(
+            name=glbs.PAUSE_FLEX_CALC,
+            value=False,
+            description="Flag to pause flexibility calculation, e.g., during a flex event",
+            type="bool"
+        )
     ]
 
 def _ensure_defaults_in_appendix(

@@ -189,7 +189,9 @@ class FlexibilityShadowMPC(mpc_full.MPC):
 
         """
         # during provision do not calculate flex
-        if self.get(glbs.PROVISION_VAR_NAME).value:
+        # if self.get(glbs.PROVISION_VAR_NAME).value:
+        #     return
+        if self.get(glbs.PAUSE_FLEX_CALC).value:
             return
 
         # do not trigger callback on self set variables

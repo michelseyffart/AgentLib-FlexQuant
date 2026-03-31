@@ -165,6 +165,12 @@ class FlexibilityIndicatorModuleConfig(agentlib.BaseModuleConfig):
             unit="-",
             type="bool",
             description="Variable indicating whether the agent is currently in provision",
+        ),
+        agentlib.AgentVariable(
+            name=glbs.PAUSE_FLEX_CALC,
+            unit="-",
+            type="bool",
+            description="Variable to pause the flexibility calculation and sending of offers",
         )
     ]
 
@@ -455,7 +461,7 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
                 continue
             self.var_list.append(variable.name)
         self.time = []
-        self.in_provision = False
+        self.pause_flex_calc = False
         self.offer_count = 0
         self.df = pd.DataFrame(columns=pd.Series(self.var_list))
         self.data = FlexibilityData(
@@ -489,10 +495,10 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
         flexibility calculations when all required inputs are available.
         """ 
         
-        if name == glbs.PROVISION_VAR_NAME:
-            self.in_provision = inp.value
+        if name == glbs.PAUSE_FLEX_CALC:
+            self.pause_flex_calc = inp.value
 
-        if self.in_provision:
+        if self.pause_flex_calc:
             self.data = self.callback_handler.set_all_callback_variables_to_none(data=self.data)
         else: 
             self.data = self.callback_handler.update_input(data=self.data, name=name, value=inp.value)
