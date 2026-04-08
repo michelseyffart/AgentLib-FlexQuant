@@ -28,7 +28,7 @@ class FlexOffer(BaseModel):
 
     base_power_profile: pd.Series = pydantic.Field(
         default=None,
-        unit="W",
+        unit="kW",
         scalar=False,
         description="Power profile of the baseline MPC",
     )
@@ -38,9 +38,15 @@ class FlexOffer(BaseModel):
         scalar=True,
         description="Price for positive flexibility",
     )
+    pos_corrected_costs_rel: Optional[float] = pydantic.Field(
+        default=None,
+        unit="ct/kWh",
+        scalar=True,
+        description="Price for positive flexibility, corrected for relative price changes",
+    )
     pos_diff_profile: pd.Series = pydantic.Field(
         default=None,
-        unit="W",
+        unit="kW",
         scalar=False,
         description="Power profile for the positive difference",
     )
@@ -50,9 +56,15 @@ class FlexOffer(BaseModel):
         scalar=True,
         description="Price for negative flexibility",
     )
+    neg_corrected_costs_rel: Optional[float] = pydantic.Field(
+        default=None,
+        unit="ct/kWh",
+        scalar=True,
+        description="Price for negative flexibility, corrected for relative price changes",
+    )
     neg_diff_profile: pd.Series = pydantic.Field(
         default=None,
-        unit="W",
+        unit="kW",
         scalar=False,
         description="Power profile for the negative difference",
     )

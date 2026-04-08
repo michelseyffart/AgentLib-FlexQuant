@@ -659,8 +659,10 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
             base_power_profile=base_power_profile,
             pos_diff_profile=pos_diff_profile,
             pos_price=self.data.kpis_pos.costs.value,
+            pos_corrected_costs_rel=self.data.kpis_pos.corrected_costs.value,
             neg_diff_profile=neg_diff_profile,
             neg_price=self.data.kpis_neg.costs.value,
+            neg_corrected_costs_rel=self.data.kpis_neg.corrected_costs.value,
         )
 
         # set outputs
@@ -690,8 +692,10 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
         base_power_profile: pd.Series,
         pos_diff_profile: pd.Series,
         pos_price: float,
+        pos_corrected_costs_rel: float,
         neg_diff_profile: pd.Series,
         neg_price: float,
+        neg_corrected_costs_rel: float,
         timestamp: float = None,
     ):
         """Send a flex offer as an agent Variable.
@@ -705,9 +709,11 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
             pos_diff_profile: power profile for the positive difference (base-pos)
             in flexibility event time grid
             pos_price: price for positive flexibility
+            pos_corrected_costs_rel: corrected relative costs for positive flexibility
             neg_diff_profile: power profile for the negative difference (neg-base)
             in flexibility event time grid
             neg_price: price for negative flexibility
+            neg_corrected_costs_rel: corrected relative costs for negative flexibility
             timestamp: the time offer was generated
 
         """
@@ -718,8 +724,10 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
                 base_power_profile=base_power_profile,
                 pos_diff_profile=pos_diff_profile,
                 pos_price=pos_price,
+                pos_corrected_costs_rel=pos_corrected_costs_rel,
                 neg_diff_profile=neg_diff_profile,
                 neg_price=neg_price,
+                neg_corrected_costs_rel=neg_corrected_costs_rel,
             )
             if timestamp is None:
                 timestamp = self.env.time
