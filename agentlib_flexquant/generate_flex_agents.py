@@ -921,8 +921,14 @@ class FlexAgentGenerator:
             class_name = mod_type["class_name"]
             # Get the class
             dynamic_class = cmng.get_class_from_file(file_path, class_name)
+            model_kwargs = deepcopy(
+                self.baseline_mpc_module_config.optimization_backend["model"]
+            )
+            # 'type' identifies the model class and is not a constructor kwarg.
+            _ = model_kwargs.pop("type", None)
+            dynamic_model = dynamic_class(**model_kwargs)
             if self.flex_config.baseline_config_generator_data.comfort_variable not in [
-                state.name for state in dynamic_class().states
+                state.name for state in dynamic_model.states
             ]:
                 raise ConfigurationError(
                     f"Given comfort variable "
