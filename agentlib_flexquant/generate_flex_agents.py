@@ -62,12 +62,12 @@ class FlexAgentGenerator:
 
     """
 
-    orig_mpc_module_config: MPCConfig
-    baseline_mpc_module_config: MPCConfig
-    pos_flex_mpc_module_config: MPCConfig
-    neg_flex_mpc_module_config: MPCConfig
-    indicator_module_config: FlexibilityIndicatorModuleConfig
-    market_module_config: FlexibilityMarketModuleConfig
+    # orig_mpc_module_config: MPCConfig
+    # baseline_mpc_module_config: MPCConfig
+    # pos_flex_mpc_module_config: MPCConfig
+    # neg_flex_mpc_module_config: MPCConfig
+    # indicator_module_config: FlexibilityIndicatorModuleConfig
+    # market_module_config: FlexibilityMarketModuleConfig
 
     def __init__(
             self,
