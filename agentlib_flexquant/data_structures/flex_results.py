@@ -119,6 +119,7 @@ class Results:
             Union[str, FilePath, dict[str, dict[str, pd.DataFrame]], "Results"]
         ] = None,
         to_timescale: TimeConversionTypes = "seconds",
+        file_suffix: str = None
     ):
         # Already a Results instance — copy over its data
         if isinstance(results, Results):
@@ -129,6 +130,8 @@ class Results:
         self._load_flex_config(flex_config, generated_flex_files_base_path)
         # Get filenames of configs to load agents and modules
         self._get_config_filenames()
+        if file_suffix:
+            self._set_config_filename_suffix(file_suffix)
         # Load configs for mpc, indicator, market
         self._load_agent_module_configs()
         # Load sim configs if present
@@ -207,6 +210,37 @@ class Results:
             else:  # is dict
                 self.config_filename_market = FlexibilityMarketConfig.model_validate(
                     self.flex_config.market_config).name_of_created_file
+
+    def _set_config_filename_suffix(self, suffix: str):
+        """Add a suffix to the config filenames.
+
+        This is useful when multiple results should be loaded from the same directory
+        and the config files have the same name except for a suffix.
+
+        Args:
+            suffix: The suffix to add to the config filenames
+
+        """
+        self.config_filename_baseline = self._add_suffix_to_filename(
+            self.config_filename_baseline, suffix
+        )
+        self.config_filename_pos_flex = self._add_suffix_to_filename(
+            self.config_filename_pos_flex, suffix
+        )
+        self.config_filename_neg_flex = self._add_suffix_to_filename(
+            self.config_filename_neg_flex, suffix
+        )
+        self.config_filename_indicator = self._add_suffix_to_filename(
+            self.config_filename_indicator, suffix
+        )
+        if hasattr(self, "config_filename_market"):
+            self.config_filename_market = self._add_suffix_to_filename(
+                self.config_filename_market, suffix
+            )
+
+    @staticmethod
+    def _add_suffix_to_filename(filename, suffix):
+        return f"{Path(filename).stem}{suffix}{Path(filename).suffix}"
 
     def _load_agent_module_configs(self):
         """Load agent and module configs."""
