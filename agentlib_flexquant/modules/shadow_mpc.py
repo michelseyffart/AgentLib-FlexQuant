@@ -86,6 +86,16 @@ class FlexibilityShadowMPC(mpc_full.MPC):
         # Output must be defined in the config as "type"="pd.Series"
         if not self.config.set_outputs:
             return
+        # send a success flag
+        self.agent.data_broker.send_variable(
+            AgentVariable(
+                name=glbs.OPTIMIZATION_SUCCESS_VAR_NAME,
+                alias=glbs.OPTIMIZATION_SUCCESS_VAR_NAME,
+                value=solution.stats["success"],
+                source=Source(agent_id=self.agent.config.id, module_id=None),
+                shared=True
+            )
+        )
         self.logger.info("Sending optimal output values to data_broker.")
         df = solution.df
         self.sim_flex_model(solution)

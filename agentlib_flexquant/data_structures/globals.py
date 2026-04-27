@@ -31,6 +31,7 @@ ACCEPTED_POWER_VAR_NAME = "_P_external"
 RELATIVE_EVENT_START_TIME_VAR_NAME = "rel_start"
 RELATIVE_EVENT_END_TIME_VAR_NAME = "rel_end"
 PAUSE_FLEX_CALC = "pause_flex_calc"
+OPTIMIZATION_SUCCESS_VAR_NAME = "opti_success"
 
 # cost function in the shadow mpc. obj_std and obj_flex are to be evaluated according
 # to user definition

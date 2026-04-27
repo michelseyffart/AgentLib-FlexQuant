@@ -170,6 +170,7 @@ class FlexibilityIndicatorModuleConfig(agentlib.BaseModuleConfig):
             name=glbs.PAUSE_FLEX_CALC,
             unit="-",
             type="bool",
+            value=True,
             description="Variable to pause the flexibility calculation and sending of offers",
         )
     ]

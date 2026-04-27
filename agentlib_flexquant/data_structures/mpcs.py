@@ -58,7 +58,7 @@ default_inputs = [
         ),
         MPCVariable(
             name=glbs.PAUSE_FLEX_CALC,
-            value=False,
+            value=True,
             description="Flag to pause flexibility calculation, e.g., during a flex event",
             type="bool"
         )
