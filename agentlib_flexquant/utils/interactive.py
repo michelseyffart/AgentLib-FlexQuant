@@ -157,7 +157,7 @@ class Dashboard(flex_results.Results):
         return fig
 
     def _plot_one_mpc_variable(
-        self, fig: go.Figure, variable: str, time_step: float
+        self, fig: go.Figure, variable: str, time_step: float, variable_type: str = "variable"
     ) -> go.Figure:
         """Plot the mpc series for the specified variable at the specified time step.
 
@@ -178,6 +178,7 @@ class Dashboard(flex_results.Results):
                 self.neg_flex_module_config.module_id
             ],
             index_offset=False,
+            variable_type=variable_type,
         )
         series_pos = mpc_at_time_step(
             data=self.df_pos_flex,
@@ -186,6 +187,7 @@ class Dashboard(flex_results.Results):
                 self.pos_flex_module_config.module_id
             ],
             index_offset=False,
+            variable_type=variable_type,
         )
         series_bas = mpc_at_time_step(
             data=self.df_baseline,
@@ -194,6 +196,7 @@ class Dashboard(flex_results.Results):
                 self.baseline_module_config.module_id
             ],
             index_offset=False,
+            variable_type=variable_type,
         )
 
         def _add_step_to_data(s: pd.Series) -> pd.Series:
@@ -511,6 +514,7 @@ class Dashboard(flex_results.Results):
         show_current_characteristic_times: bool = True,
         zoom_to_offer_window: bool = False,
         zoom_to_prediction_interval: bool = False,
+        variable_type: str = "variable"
     ) -> go.Figure:
         """Create a plot for one variable
 
@@ -540,7 +544,7 @@ class Dashboard(flex_results.Results):
             self._plot_mpc_stats(fig=fig, variable=variable)
         elif variable in self.intersection_mpcs_sim.keys():
             self._plot_one_mpc_variable(
-                fig=fig, variable=variable, time_step=at_time_step
+                fig=fig, variable=variable, time_step=at_time_step, variable_type=variable_type
             )
             if show_current_characteristic_times:
                 self._mark_characteristic_times(fig=fig, offer_time=at_time_step)
