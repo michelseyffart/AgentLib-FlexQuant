@@ -660,10 +660,10 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
             base_power_profile=base_power_profile,
             pos_diff_profile=pos_diff_profile,
             pos_price=self.data.kpis_pos.costs.value,
-            pos_corrected_costs_rel=self.data.kpis_pos.corrected_costs.value,
+            pos_corrected_costs_rel=self.data.kpis_pos.corrected_costs_rel.value,
             neg_diff_profile=neg_diff_profile,
             neg_price=self.data.kpis_neg.costs.value,
-            neg_corrected_costs_rel=self.data.kpis_neg.corrected_costs.value,
+            neg_corrected_costs_rel=self.data.kpis_neg.corrected_costs_rel.value,
         )
 
         # set outputs
