@@ -685,9 +685,12 @@ class FlexAgentGenerator:
             if field in self.market_module_config.__fields__.keys():
                 module_config.__setattr__(field, getattr(self.market_module_config,
                                                          field))
-        module_config.results_file = (
-                self.flex_config.results_directory / module_config.results_file.name
-        )
+
+        for field in module_config.model_fields.keys():
+            if "results_file" in field:
+                file_path = self.flex_config.results_directory / getattr(module_config, field).name
+                setattr(module_config, field, file_path)
+
         for parameter in module_config.parameters:
             if parameter.name == glbs.COLLOCATION_TIME_GRID:
                 dis_op = self.baseline_mpc_module_config.optimization_backend[

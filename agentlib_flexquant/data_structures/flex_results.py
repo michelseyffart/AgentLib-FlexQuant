@@ -484,15 +484,15 @@ class Results:
                     resolved_sim_results_path,
                 )
             }
-        if self.flex_config.market_config:
-            res[self.market_agent_config.id] = {
-                self.market_module_config.module_id: load_market(
-                    Path(
-                        res_path,
-                        Path(self.market_module_config.results_file).name,
-                    )
-                )
-            }
+        # if self.flex_config.market_config:
+        #     res[self.market_agent_config.id] = {
+        #         self.market_module_config.module_id: load_market(
+        #             Path(
+        #                 res_path,
+        #                 Path(self.market_module_config.results_file).name,
+        #             )
+        #         )
+        #     }
         return res, res_path
 
     def _load_results_dataframes(self, results_dict: dict):
@@ -513,12 +513,12 @@ class Results:
         self.df_indicator = results_dict[self.indicator_agent_config.id][
             self.indicator_module_config.module_id
         ]
-        if self.flex_config.market_config:
-            self.df_market = results_dict[self.market_agent_config.id][
-                self.market_module_config.module_id
-            ]
-        else:
-            self.df_market = None
+        # if self.flex_config.market_config:
+        #     self.df_market = results_dict[self.market_agent_config.id][
+        #         self.market_module_config.module_id
+        #     ]
+        # else:
+        #     self.df_market = None
 
     def _load_stats_dataframes(self, results_path):
         """Load dataframes for mpc stats."""
@@ -564,7 +564,7 @@ class Results:
                 self.df_neg_flex_stats,
                 self.df_indicator,
             ]
-            + ([self.df_market] if self.flex_config.market_config else [])
+            # + ([self.df_market] if self.flex_config.market_config else [])
             + ([self.df_simulation] if self.simulator_agent_config else [])
         ):
             convert_timescale_of_index(
