@@ -203,6 +203,7 @@ class SetupSystemModifier(ast.NodeTransformer):
         if isinstance(self.mpc_data, BaselineMPCData):
             module = add_import_to_tree(name="pandas", alias="pd", tree=module)
             module = add_import_to_tree(name="casadi", alias="ca", tree=module)
+            module = add_import_to_tree(name="numpy", alias="np", tree=module)
         # delete imports for shadow MPCs
         if isinstance(self.mpc_data, (NFMPCData, PFMPCData)):
             module = remove_all_imports_from_tree(module)

@@ -36,6 +36,10 @@ class FlexibilityShadowMPCConfig(mpc_full.MPCConfig):
         default=None, description="Name of the power variable in the "
                                   "shadow mpc model."
     )
+    inflexible_power_variable_name: str = Field(
+        default=None, description="Name of the inflexible power variable in the "
+                                  "baseline mpc model."
+    )
     storage_variable_name: Optional[str] = Field(
         default=None, description="Name of the storage variable in the "
                                   "shadow mpc model."
@@ -365,6 +369,10 @@ class FlexibilityShadowMINLPMPCConfig(minlp_mpc.MINLPMPCConfig):
     power_variable_name: str = Field(
         default=None, description="Name of the power variable in the "
                                   "shadow mpc model."
+    )
+    inflexible_power_variable_name: str = Field(
+        default=None, description="Name of the inflexible power variable in the "
+                                  "baseline mpc model."
     )
     storage_variable_name: Optional[str] = Field(
         default=None, description="Name of the storage variable in the "

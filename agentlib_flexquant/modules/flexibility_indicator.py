@@ -143,6 +143,12 @@ class FlexibilityIndicatorModuleConfig(agentlib.BaseModuleConfig):
             description="The power input to the system",
         ),
         agentlib.AgentVariable(
+            name=glbs.INFLEXIBLE_POWER_ALIAS_BASE,
+            unit="W",
+            type="pd.Series",
+            description="The inflexible power of the system",
+        ),
+        agentlib.AgentVariable(
             name=glbs.STORED_ENERGY_ALIAS_BASE,
             unit="kWh",
             type="pd.Series",
@@ -393,6 +399,7 @@ class CallBackHandler:
             glbs.POWER_ALIAS_BASE: {"name":"power_profile_base", "is_mpc":True},
             glbs.POWER_ALIAS_NEG: {"name":"power_profile_flex_neg", "is_mpc":True},
             glbs.POWER_ALIAS_POS: {"name":"power_profile_flex_pos", "is_mpc":True},
+            glbs.INFLEXIBLE_POWER_ALIAS_BASE: {"name":"power_profile_inflexible", "is_mpc":True},
             }
 
     def update_price_variables(self, config: FlexibilityIndicatorModuleConfig, data: FlexibilityData):
@@ -552,6 +559,8 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
                 values = self.data.power_profile_flex_neg
             elif name == glbs.POWER_ALIAS_POS:
                 values = self.data.power_profile_flex_pos
+            elif name == glbs.INFLEXIBLE_POWER_ALIAS_BASE:
+                values = self.data.power_profile_inflexible
             elif name == glbs.STORED_ENERGY_ALIAS_BASE:
                 values = self.data.stored_energy_profile_base
             elif name == glbs.STORED_ENERGY_ALIAS_NEG:
@@ -664,6 +673,11 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
             neg_diff_profile=neg_diff_profile,
             neg_price=self.data.kpis_neg.costs.value,
             neg_corrected_costs_rel=self.data.kpis_neg.corrected_costs_rel.value,
+            pos_energy_envelope=self.data.envelope.energy_min.value,
+            neg_energy_envelope=self.data.envelope.energy_max.value,
+            base_energy_envelope=self.data.envelope.energy_base.value,
+            min_power_envelope=self.data.envelope.power_min.value,
+            max_power_envelope=self.data.envelope.power_max.value,
         )
 
         # set outputs
@@ -697,6 +711,11 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
         neg_diff_profile: pd.Series,
         neg_price: float,
         neg_corrected_costs_rel: float,
+        pos_energy_envelope: pd.Series,
+        neg_energy_envelope: pd.Series,
+        base_energy_envelope: pd.Series,
+        max_power_envelope: pd.Series,
+        min_power_envelope: pd.Series,
         timestamp: float = None,
     ):
         """Send a flex offer as an agent Variable.
@@ -715,6 +734,11 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
             in flexibility event time grid
             neg_price: price for negative flexibility
             neg_corrected_costs_rel: corrected relative costs for negative flexibility
+            pos_energy_envelope: energy envelope for positive flexibility
+            neg_energy_envelope: energy envelope for negative flexibility
+            base_energy_envelope: energy envelope for base flexibility
+            max_power_envelope: maximum power possible power in each time step
+            min_power_envelope: minimum power possible power in each time step
             timestamp: the time offer was generated
 
         """
@@ -729,6 +753,11 @@ class FlexibilityIndicatorModule(agentlib.BaseModule):
                 neg_diff_profile=neg_diff_profile,
                 neg_price=neg_price,
                 neg_corrected_costs_rel=neg_corrected_costs_rel,
+                pos_energy_envelope=pos_energy_envelope,
+                neg_energy_envelope=neg_energy_envelope,
+                base_energy_envelope=base_energy_envelope,
+                max_power_envelope=max_power_envelope,
+                min_power_envelope=min_power_envelope,
             )
             if timestamp is None:
                 timestamp = self.env.time

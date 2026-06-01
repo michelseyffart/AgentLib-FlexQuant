@@ -115,6 +115,12 @@ class KPISeries(KPI):
                 np.sum(self.value.values[:-1] * self._get_dt().iloc[:-1])
                 / TIME_CONVERSION[time_unit]
             )
+
+    def cumsum(self, time_unit: TimeConversionTypes = "hours") -> pd.Series:
+        return pd.Series(
+            (self.value.values * self._get_dt()).cumsum() / TIME_CONVERSION[time_unit],
+            index=self.value.index
+        )
         
 
 class FlexibilityKPIs(pydantic.BaseModel):
@@ -500,6 +506,137 @@ class FlexibilityKPIs(pydantic.BaseModel):
         return name_dict
 
 
+class FlexibilityEnvelope(pydantic.BaseModel):
+
+    energy_max: KPISeries = pydantic.Field(
+        default=KPISeries(name="energy_max", unit="kWh", integration_method=LINEAR),
+        description="Maximum energy limit of the envelope",
+    )
+    energy_min: KPISeries = pydantic.Field(
+        default=KPISeries(name="energy_min", unit="kWh", integration_method=LINEAR),
+        description="Minimum energy limit of the envelope",
+    )
+    energy_base: KPISeries = pydantic.Field(
+        default=KPISeries(name="energy_base", unit="kWh", integration_method=LINEAR),
+        description="Base energy of the envelope",
+    )
+    power_max: KPISeries = pydantic.Field(
+        default=KPISeries(name="power_max", unit="kW", integration_method=LINEAR),
+        description="Maximum power of the envelope",
+    )
+    power_min: KPISeries = pydantic.Field(
+        default=KPISeries(name="power_min", unit="kW", integration_method=LINEAR),
+        description="Minimum power of the envelope",
+    )
+
+    def calculate(
+            self,
+            power_profile_base: pd.Series,
+            power_profile_flex_neg: pd.Series,
+            power_profile_flex_pos: pd.Series,
+            power_profile_inflexible: pd.Series,
+            flex_offer_time_grid: np.ndarray,
+            mpc_time_grid: np.ndarray,
+            collocation_time_grid: list | None,
+            integration_method: INTEGRATION_METHOD,
+    ):
+        power_base_offer = self._get_power_series_offer(power_profile_base, flex_offer_time_grid)
+        power_neg_offer = self._get_power_series_offer(power_profile_flex_neg, flex_offer_time_grid)
+        power_pos_offer = self._get_power_series_offer(power_profile_flex_pos, flex_offer_time_grid)
+        power_inflexible_offer = self._get_power_series_offer(power_profile_inflexible, flex_offer_time_grid)
+
+        self._calculate_energy_envelope(
+            power_base_offer=power_base_offer,
+            power_neg_offer=power_neg_offer,
+            power_pos_offer=power_pos_offer,
+            integration_method=integration_method,
+            mpc_time_grid=mpc_time_grid,
+            collocation_time_grid=collocation_time_grid
+        )
+        self._calculate_power_limits_envelope(
+            power_base_offer=power_base_offer,
+            power_neg_offer=power_neg_offer,
+            power_pos_offer=power_pos_offer,
+            power_inflexible_offer=power_inflexible_offer,
+            collocation_time_grid=collocation_time_grid
+        )
+
+    def _calculate_energy_envelope(
+            self,
+            power_base_offer: pd.Series,
+            power_neg_offer: pd.Series,
+            power_pos_offer: pd.Series,
+            integration_method: INTEGRATION_METHOD,
+            mpc_time_grid: np.ndarray,
+            collocation_time_grid: list | None,
+    ):
+        power_base_offer_integration = self._get_kpi_series_for_integration(
+            series=power_base_offer, integration_method=integration_method, mpc_time_grid=mpc_time_grid
+        )
+        power_neg_offer_integration = self._get_kpi_series_for_integration(
+            series=power_neg_offer, integration_method=integration_method, mpc_time_grid=mpc_time_grid
+        )
+        power_pos_offer_integration = self._get_kpi_series_for_integration(
+            series=power_pos_offer, integration_method=integration_method, mpc_time_grid=mpc_time_grid
+        )
+
+        power_base_offer_integration.value = power_base_offer_integration.value.drop(
+            collocation_time_grid, errors="ignore"
+        )
+        power_neg_offer_integration.value = power_neg_offer_integration.value.drop(
+            collocation_time_grid, errors="ignore"
+        )
+        power_pos_offer_integration.value = power_pos_offer_integration.value.drop(
+            collocation_time_grid, errors="ignore"
+        )
+
+        self.energy_base.value = power_base_offer_integration.cumsum(time_unit="hours")
+        self.energy_max.value = power_neg_offer_integration.cumsum(time_unit="hours")
+        self.energy_min.value = power_pos_offer_integration.cumsum(time_unit="hours")
+
+    def _calculate_power_limits_envelope(
+            self,
+            power_base_offer: pd.Series,
+            power_neg_offer: pd.Series,
+            power_pos_offer: pd.Series,
+            power_inflexible_offer: pd.Series,
+            collocation_time_grid: list | None,
+    ):
+        max_power_flexible = power_neg_offer - power_inflexible_offer
+        min_power_flexible = power_pos_offer - power_inflexible_offer
+
+        max_power_flexible_mean = max_power_flexible.mean()
+        min_power_flexible_mean = min_power_flexible.mean()
+
+        power_max_envelope = power_inflexible_offer + max_power_flexible_mean
+        power_min_envelope = power_inflexible_offer + min_power_flexible_mean
+
+        power_max_envelope = power_max_envelope.clip(lower=power_base_offer)
+        power_min_envelope = power_min_envelope.clip(upper=power_base_offer)
+
+        power_max_envelope = power_max_envelope.drop(collocation_time_grid, errors="ignore")
+        power_min_envelope = power_min_envelope.drop(collocation_time_grid, errors="ignore")
+
+        self.power_max.value = power_max_envelope
+        self.power_min.value = power_min_envelope
+
+    @staticmethod
+    def _get_power_series_offer(power_series: pd.Series, flex_offer_time_grid) -> pd.Series:
+        return power_series.loc[flex_offer_time_grid[0] : flex_offer_time_grid[-1]].copy()
+
+    @staticmethod
+    def _get_kpi_series_for_integration(
+            series: pd.Series, integration_method: INTEGRATION_METHOD, mpc_time_grid: np.ndarray
+    ) -> KPISeries:
+        kpi_series = KPISeries(value=series, integration_method=integration_method)
+        if kpi_series.integration_method == CONSTANT:
+            kpi_series = kpi_series.__deepcopy__()
+            kpi_series.value = kpi_series.value.reindex(mpc_time_grid).dropna()
+            return kpi_series
+        else:
+            return kpi_series.__deepcopy__()
+
+
 class FlexibilityData(pydantic.BaseModel):
     """Class containing the data for the calculation of the flexibility."""
 
@@ -530,6 +667,10 @@ class FlexibilityData(pydantic.BaseModel):
         default=None,
         description="Power profile of the positive flexibility",
     )
+    power_profile_inflexible: pd.Series = pydantic.Field(
+        default=None,
+        description="Power profile of the unflexible loads",
+    )
     stored_energy_profile_base: pd.Series = pydantic.Field(
         default=None,
         description="Base profile of the stored electrical energy",
@@ -559,6 +700,10 @@ class FlexibilityData(pydantic.BaseModel):
     kpis_neg: FlexibilityKPIs = pydantic.Field(
         default=FlexibilityKPIs(direction="negative"),
         description="KPIs for negative flexibility",
+    )
+    envelope: FlexibilityEnvelope = pydantic.Field(
+        default=FlexibilityEnvelope(),
+        description="Flexibility envelope",
     )
 
     class Config:
@@ -676,6 +821,16 @@ class FlexibilityData(pydantic.BaseModel):
             stored_energy_shadow=self.stored_energy_profile_flex_neg,
             enable_energy_costs_correction=enable_energy_costs_correction,
             calculate_flex_cost=calculate_flex_cost,
+            integration_method=integration_method,
+            collocation_time_grid=collocation_time_grid,
+        )
+        self.envelope.calculate(
+            power_profile_base=self.power_profile_base,
+            power_profile_flex_neg=self.power_profile_flex_neg,
+            power_profile_flex_pos=self.power_profile_flex_pos,
+            power_profile_inflexible=self.power_profile_inflexible,
+            mpc_time_grid=self.mpc_time_grid,
+            flex_offer_time_grid=self.flex_offer_time_grid,
             integration_method=integration_method,
             collocation_time_grid=collocation_time_grid,
         )

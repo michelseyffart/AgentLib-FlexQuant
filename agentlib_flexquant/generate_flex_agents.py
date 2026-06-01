@@ -371,6 +371,8 @@ class FlexAgentGenerator:
             self.flex_config.casadi_sim_time_step)
         module_config_flex_dict["power_variable_name"] = (
             self.flex_config.baseline_config_generator_data.power_variable)
+        module_config_flex_dict["inflexible_power_variable_name"] = (
+            self.flex_config.baseline_config_generator_data.inflexible_power_variable)
         module_config_flex_dict["storage_variable_name"] = (
             self.indicator_module_config.correct_costs.stored_energy_variable)
         module_config_flex = cmng.MODULE_TYPE_DICT[module_config.type](
@@ -558,6 +560,17 @@ class FlexAgentGenerator:
                     alias=mpc_dataclass.power_alias,
                 )
             )
+        if self.flex_config.baseline_config_generator_data.inflexible_power_variable in output_dict:
+            output_dict[
+                self.flex_config.baseline_config_generator_data.inflexible_power_variable
+            ].alias = mpc_dataclass.inflexible_power_alias
+        else:
+            module_config_flex.outputs.append(
+                MPCVariable(
+                    name=self.flex_config.baseline_config_generator_data.inflexible_power_variable,
+                    alias=mpc_dataclass.inflexible_power_alias,
+                )
+            )
         # add or change alias for stored energy variable
         if self.indicator_module_config.correct_costs.enable_energy_costs_correction:
             output_dict[
@@ -655,22 +668,6 @@ class FlexAgentGenerator:
         module_config.results_file = (
                 self.flex_config.results_directory / module_config.results_file.name
         )
-
-        # add sources
-        input_source_dict = {
-            glbs.POWER_ALIAS_BASE: self.flex_config.baseline_config_generator_data.agent_id,
-            glbs.STORED_ENERGY_ALIAS_BASE: self.flex_config.baseline_config_generator_data.agent_id,
-            glbs.POWER_ALIAS_POS: self.flex_config.shadow_mpc_config_generator_data.pos_flex.agent_id,
-            glbs.STORED_ENERGY_ALIAS_POS: self.flex_config.shadow_mpc_config_generator_data.pos_flex.agent_id,
-            glbs.POWER_ALIAS_NEG: self.flex_config.shadow_mpc_config_generator_data.neg_flex.agent_id,
-            glbs.STORED_ENERGY_ALIAS_NEG: self.flex_config.shadow_mpc_config_generator_data.neg_flex.agent_id,
-            glbs.PROVISION_VAR_NAME: self.market_agent_config.id if self.flex_config.market_config else None,
-            glbs.PAUSE_FLEX_CALC: self.market_agent_config.id if self.flex_config.market_config else None,
-        }
-
-        for input_var in module_config.inputs:
-            if input_var.name in input_source_dict.keys():
-                input_var.source = Source(agent_id=input_source_dict[input_var.name], module_id=None)
 
         module_config.model_config["frozen"] = True
         return module_config

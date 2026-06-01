@@ -28,50 +28,106 @@ class FlexOffer(BaseModel):
 
     base_power_profile: pd.Series = pydantic.Field(
         default=None,
-        unit="kW",
-        scalar=False,
         description="Power profile of the baseline MPC",
+        json_schema_extra={
+            "unit": "kW",
+            "scalar": False
+        }
     )
     pos_price: Optional[float] = pydantic.Field(
         default=None,
-        unit="ct",
-        scalar=True,
         description="Price for positive flexibility",
+        json_schema_extra={
+            "unit": "ct",
+            "scalar": True
+        }
     )
     pos_corrected_costs_rel: Optional[float] = pydantic.Field(
         default=None,
-        unit="ct/kWh",
-        scalar=True,
         description="Price for positive flexibility, corrected for relative price changes",
+        json_schema_extra={
+            "unit": "ct/kWh",
+            "scalar": True,
+        }
     )
     pos_diff_profile: pd.Series = pydantic.Field(
         default=None,
-        unit="kW",
-        scalar=False,
         description="Power profile for the positive difference",
+        json_schema_extra={
+            "unit": "kW",
+            "scalar": False
+        }
     )
     neg_price: Optional[float] = pydantic.Field(
         default=None,
-        unit="ct",
-        scalar=True,
         description="Price for negative flexibility",
+        json_schema_extra={
+            "unit": "ct",
+            "scalar": True
+        }
     )
     neg_corrected_costs_rel: Optional[float] = pydantic.Field(
         default=None,
-        unit="ct/kWh",
-        scalar=True,
         description="Price for negative flexibility, corrected for relative price changes",
+        json_schema_extra={
+            "unit": "ct/kWh",
+            "scalar": True
+        }
     )
     neg_diff_profile: pd.Series = pydantic.Field(
         default=None,
-        unit="kW",
-        scalar=False,
         description="Power profile for the negative difference",
+        json_schema_extra={
+            "unit": "kW",
+            "scalar": False
+        }
     )
     status: OfferStatus = pydantic.Field(
-        default=OfferStatus.NOT_ACCEPTED.value,
-        scalar=True,
+        default=OfferStatus.NOT_ACCEPTED,
         description="Status of the FlexOffer",
+        json_schema_extra={
+            "scalar": True
+        }
+    )
+    pos_energy_envelope: Optional[pd.Series] = pydantic.Field(
+        default=None,
+        description="Positive energy envelope which is the integrated positive power",
+        json_schema_extra={
+            "scalar": False,
+            "unit": "kWh"
+        }
+    )
+    neg_energy_envelope: Optional[pd.Series] = pydantic.Field(
+        default=None,
+        description="Negative energy envelope which is the integrated negative power",
+        json_schema_extra={
+            "scalar": False,
+            "unit": "kWh"
+        }
+    )
+    base_energy_envelope: Optional[pd.Series] = pydantic.Field(
+        default=None,
+        description="Base energy envelope which is the integrated base power",
+        json_schema_extra={
+            "scalar": False,
+            "unit": "kWh"
+        }
+    )
+    min_power_envelope: Optional[pd.Series] = pydantic.Field(
+        default=None,
+        description="Minimum power including inflexible loads in each step of the envelope",
+        json_schema_extra={
+            "scalar": False,
+            "unit": "kW"
+        }
+    )
+    max_power_envelope: Optional[pd.Series] = pydantic.Field(
+        default=None,
+        description="Maximum power including inflexible loads in each step of the envelope",
+        json_schema_extra={
+            "scalar": False,
+            "unit": "kW"
+        }
     )
 
     class Config:

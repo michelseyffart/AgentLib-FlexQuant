@@ -101,6 +101,7 @@ class BaseMPCData(pydantic.BaseModel):
     agent_id: str
     # variables
     power_alias: str
+    inflexible_power_alias: str
     stored_energy_alias: str
     config_inputs_appendix: list[MPCVariable] = Field(
         default=[],
@@ -129,6 +130,7 @@ class BaselineMPCData(BaseMPCData):
     agent_id: str = "Baseline"
     # variables
     power_alias: str = glbs.POWER_ALIAS_BASE
+    inflexible_power_alias: str = glbs.INFLEXIBLE_POWER_ALIAS_BASE
     stored_energy_alias: str = glbs.STORED_ENERGY_ALIAS_BASE
     power_variable: str = pydantic.Field(
         default="P_el",
@@ -136,6 +138,13 @@ class BaselineMPCData(BaseMPCData):
             "Name of the variable representing the electrical "
             "power in the baseline config"
         ),
+    )
+    inflexible_power_variable: str = pydantic.Field(
+        default="P_el_inflexible",
+        description=(
+            "Name of the variable representing the inflexible electrical "
+            "power in the baseline config"
+        )
     )
     profile_deviation_weight: float = pydantic.Field(
         default=0,
@@ -214,6 +223,7 @@ class PFMPCData(BaseMPCData):
     agent_id: str = "PosFlexMPC"
     # variables
     power_alias: str = glbs.POWER_ALIAS_POS
+    inflexible_power_alias: str = glbs.INFLEXIBLE_POWER_ALIAS_POS
     stored_energy_alias: str = glbs.STORED_ENERGY_ALIAS_POS
     flex_cost_function: str = pydantic.Field(
         default=None, description="Cost function of the PF-MPC during the event",
@@ -272,6 +282,7 @@ class NFMPCData(BaseMPCData):
     agent_id: str = "NegFlexMPC"
     # variables
     power_alias: str = glbs.POWER_ALIAS_NEG
+    inflexible_power_alias: str = glbs.INFLEXIBLE_POWER_ALIAS_NEG
     stored_energy_alias: str = glbs.STORED_ENERGY_ALIAS_NEG
     flex_cost_function: str = pydantic.Field(
         default=None, description="Cost function of the NF-MPC during the event",
