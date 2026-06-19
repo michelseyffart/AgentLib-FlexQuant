@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 CASADI_INPUT = "CasadiInput"
 CASADI_PARAMETER = "CasadiParameter"
 CASADI_OUTPUT = "CasadiOutput"
+CASADI_STATE = "CasadiState"
 
 # String templates
 INPUT_TEMPLATE = Template(
@@ -38,6 +39,9 @@ PARAMETER_TEMPLATE = Template(
 OUTPUT_TEMPLATE = Template(
     "$class_name(name='$name', unit='$unit', type='$type', value=$value, "
     "description='$description')"
+)
+STATE_TEMPLATE = Template(
+    "$class_name(name='$name', value=$value, unit='$unit', description='$description')"
 )
 
 
@@ -134,6 +138,13 @@ def add_output(
             type=type,
             value=value,
             description=description,
+        )
+    )
+
+def add_state(name: str, value: Union[int, float], unit: str, description: str) -> ast.expr:
+    return create_ast_element(
+        STATE_TEMPLATE.substitute(
+            class_name=CASADI_STATE, name=name, value=value, unit=unit, description=description
         )
     )
 
@@ -336,6 +347,12 @@ class SetupSystemModifier(ast.NodeTransformer):
                         add_parameter(parameter.name, parameter.value, parameter.unit, parameter.description)
                     )
 
+            if getattr(body.target, "id", None) == "states":
+                body.value.elts.append(
+                    add_state("P_flex_slack", 0, "kW", "Slack for the flexibility constraint")
+                )
+
+
 
     def modify_config_class_baseline(self, node: ast.ClassDef):
         """Modify the config class of the baseline mpc.
@@ -475,6 +492,20 @@ class SetupSystemModifier(ast.NodeTransformer):
                             .value
                         )
                         item.value.elts.append(new_element)
+
+                    p_flex_slack_constraint = ast.parse("0, self.P_flex_slack, inf").body[0].value
+                    item.value.elts.append(p_flex_slack_constraint)
+                    if isinstance(self.mpc_data, PFMPCData):
+                        pos_constraint = ast.parse(
+                            "0, self._P_el_base - self.P_el + self.P_flex_slack, inf"
+                        ).body[0].value
+                        item.value.elts.append(pos_constraint)
+                    elif isinstance(self.mpc_data, NFMPCData):
+                        neg_constraint = ast.parse(
+                            "0, self.P_el - self._P_el_base + self.P_flex_slack, inf"
+                        ).body[0].value
+                        item.value.elts.append(neg_constraint)
+
                     break
         # loop through setup_system function to find return statement
         for i, stmt in enumerate(node.body):

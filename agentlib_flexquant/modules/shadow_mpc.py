@@ -186,7 +186,8 @@ class FlexibilityShadowMPC(mpc_full.MPC):
             self.agent.data_broker.register_callback(
                 name=custom_inputs["name"],
                 alias=custom_inputs["alias"],
-                callback=self.calc_flex_callback
+                callback=self.calc_flex_callback,
+                source=self.get(name=custom_inputs["name"]).source
             )
         for base_states in self.config.baseline_state_names:
             self.agent.data_broker.register_callback(
